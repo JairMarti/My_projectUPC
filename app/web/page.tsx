@@ -1,23 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ChevronLeft } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChevronLeft } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Categorías de imágenes
 const categories = [
   { id: "todos", name: "Todos" },
   { id: "reciclaje", name: "Reciclaje" },
   { id: "agua", name: "Agua" },
   { id: "energia", name: "Energía" },
   { id: "naturaleza", name: "Naturaleza" },
-]
+];
 
-// Imágenes de la web con enlaces externos
 const webImages = [
   {
     id: 1,
@@ -103,21 +101,23 @@ const webImages = [
     src: "/images/energy-game.png",
     categories: ["todos", "energia"],
   },
-]
+];
+
+type ImageData = {
+  id: number;
+  title: string;
+  description: string;
+  src: string;
+  categories: string[];
+};
 
 export default function WebGallery() {
-  const [selectedCategory, setSelectedCategory] = useState("todos")
-  const [selectedImage, setSelectedImage] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState("todos");
+  const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
 
-  const filteredImages = webImages.filter((image) => image.categories.includes(selectedCategory))
-
-  const openImage = (image) => {
-    setSelectedImage(image)
-  }
-
-  const closeImage = () => {
-    setSelectedImage(null)
-  }
+  const filteredImages = webImages.filter((image) =>
+    image.categories.includes(selectedCategory)
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-100 to-blue-100 p-4">
@@ -149,13 +149,12 @@ export default function WebGallery() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="todos" className="mb-8">
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-8">
           <TabsList className="grid w-full grid-cols-5 bg-green-100">
             {categories.map((category) => (
               <TabsTrigger
                 key={category.id}
                 value={category.id}
-                onClick={() => setSelectedCategory(category.id)}
                 className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
               >
                 {category.name}
@@ -169,13 +168,14 @@ export default function WebGallery() {
             <Card
               key={image.id}
               className="overflow-hidden border-2 border-green-300 bg-white/90 shadow-md transition-transform hover:scale-105"
-              onClick={() => openImage(image)}
+              onClick={() => setSelectedImage(image)}
             >
               <div className="relative h-48 w-full">
                 <Image
                   src={image.src || "/placeholder.svg"}
                   alt={image.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   className="object-cover"
                   unoptimized={image.src.startsWith("http")}
                 />
@@ -195,7 +195,12 @@ export default function WebGallery() {
         )}
 
         {selectedImage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={closeImage}>
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            onClick={() => setSelectedImage(null)}
+            role="dialog"
+            aria-modal="true"
+          >
             <div
               className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-lg bg-white p-2"
               onClick={(e) => e.stopPropagation()}
@@ -203,7 +208,7 @@ export default function WebGallery() {
               <Button
                 className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full p-0"
                 variant="outline"
-                onClick={closeImage}
+                onClick={() => setSelectedImage(null)}
               >
                 ✕
               </Button>
@@ -212,6 +217,7 @@ export default function WebGallery() {
                   src={selectedImage.src || "/placeholder.svg"}
                   alt={selectedImage.title}
                   fill
+                  sizes="80vw"
                   className="object-contain"
                   unoptimized={selectedImage.src.startsWith("http")}
                 />
@@ -225,5 +231,5 @@ export default function WebGallery() {
         )}
       </div>
     </div>
-  )
+  );
 }

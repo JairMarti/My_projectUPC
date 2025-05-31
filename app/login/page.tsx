@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -10,25 +9,41 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+
+// IMPORTA FIREBASE
+import { auth } from "@/lib/firebase"
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 
 export default function LoginPage() {
   const router = useRouter()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Simple validation
     if (!username || !password) {
       setError("Por favor completa todos los campos")
       return
     }
-
-    // For demo purposes, accept any login
-    // In a real app, you would validate against a database
     router.push("/dashboard")
+  }
+
+  const handleGoogleLogin = async () => {
+    if (isLoggingIn) return
+    setIsLoggingIn(true)
+    const provider = new GoogleAuthProvider()
+    try {
+      await signInWithPopup(auth, provider)
+      router.push("/dashboard")
+    } catch (err) {
+      console.error("Error al iniciar sesión con Google:", err)
+      setError("No se pudo iniciar sesión con Google.")
+    } finally {
+      setIsLoggingIn(false)
+    }
   }
 
   return (
@@ -60,9 +75,7 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-green-700">
-                Nombre de usuario
-              </Label>
+              <Label htmlFor="username" className="text-green-700">Nombre de usuario</Label>
               <Input
                 id="username"
                 type="text"
@@ -73,9 +86,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-green-700">
-                Contraseña
-              </Label>
+              <Label htmlFor="password" className="text-green-700">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
@@ -84,15 +95,45 @@ export default function LoginPage() {
                 className="rounded-full border-2 border-green-300 bg-green-50 text-lg"
                 placeholder="Tu contraseña secreta"
               />
+              <small className="text-gray-400">Nunca compartas tu contraseña con nadie.</small>
             </div>
 
-            {error && <p className="text-center text-red-500">{error}</p>}
+            {error && <p className="text-center text-red-600 font-semibold">{error}</p>}
 
             <Button
               type="submit"
               className="w-full rounded-full bg-green-500 text-lg font-bold text-white hover:bg-green-600"
             >
               ¡Entrar!
+            </Button>
+
+            <div className="my-4 flex items-center">
+              <Separator className="flex-1" />
+              <span className="mx-2 text-sm text-gray-500">o</span>
+              <Separator className="flex-1" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              disabled={isLoggingIn}
+              className="w-full flex items-center justify-center gap-2 rounded-full border-2 border-gray-300 bg-white text-lg font-medium hover:bg-gray-50"
+            >
+              {isLoggingIn ? (
+                "Cargando..."
+              ) : (
+                <>
+                  <Image
+                    src="/images/google-logo.png"
+                    alt="Google logo"
+                    width={20}
+                    height={20}
+                    className="h-5 w-5"
+                  />
+                  Iniciar sesión con Google
+                </>
+              )}
             </Button>
 
             <div className="text-center">
